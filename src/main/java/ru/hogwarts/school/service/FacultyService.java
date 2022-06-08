@@ -26,7 +26,6 @@ public class FacultyService {
     }
 
     public Faculty updateFaculty(Faculty faculty) {
-
         return facultyRepository.save(faculty);
     }
 
@@ -38,7 +37,11 @@ public class FacultyService {
         return facultyRepository.findAll();
     }
 
-    public Collection<Faculty> findFacultiesByColor(String color) {
+    public Collection<Faculty> getFacultiesByColor(String color) {
         return facultyRepository.findAllByColor(color);
+    }
+
+    public Collection<Faculty> getFacultiesByColorOrName(String color, String name) {
+        return facultyRepository.findAllByColorOrNameIgnoreCase(color, name);
     }
 }
