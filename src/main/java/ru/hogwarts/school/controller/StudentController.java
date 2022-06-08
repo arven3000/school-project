@@ -6,6 +6,7 @@ import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/student")
@@ -22,13 +23,11 @@ public class StudentController {
         return studentService.getAllStudents();
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Student> getStudent(@PathVariable long id) {
-        Student student = studentService.findStudent(id);
-        if (student == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(student);
+        return studentService.findStudent(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -45,16 +44,17 @@ public class StudentController {
         return ResponseEntity.ok(updateStudent);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Student> deleteStudent(@PathVariable long id) {
-        Student removeStudent = studentService.removeStudent(id);
-        if (removeStudent == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(removeStudent);
+        return studentService.findStudent(id)
+                .map(f -> {
+                    studentService.removeStudent(id);
+                    return ResponseEntity.ok(f);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("findByAge/{age}")
+    @GetMapping("/findByAge/{age}")
     public ResponseEntity<Collection<Student>> getAllStudentsByAge(@PathVariable int age) {
         Collection<Student> students = studentService.findAllStudentsByAge(age);
         if (students.isEmpty()) {
