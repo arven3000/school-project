@@ -25,8 +25,12 @@ public class FacultyController {
     }
 
     @GetMapping("/getAllFacultiesByColorOrName")
-    public Collection<Faculty> getAllFacultiesByColorOrName(@RequestParam String color, @RequestParam String name) {
-        return facultyService.getFacultiesByColorOrName(color, name);
+    public ResponseEntity<Collection<Faculty>> getAllFacultiesByColorOrName(@RequestParam String example) {
+        Collection<Faculty> faculties = facultyService.getFacultiesByColorOrName(example);
+        if (faculties.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(faculties);
     }
 
     @GetMapping("/{id}")
