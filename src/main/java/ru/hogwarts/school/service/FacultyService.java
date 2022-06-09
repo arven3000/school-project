@@ -42,6 +42,6 @@ public class FacultyService {
     }
 
     public Collection<Faculty> getFacultiesByColorOrName(String example) {
-        return facultyRepository.findAllByColorOrNameIgnoreCase(example);
+        return facultyRepository.findAllByColorOrNameIgnoreCase(example, example);
     }
 }
