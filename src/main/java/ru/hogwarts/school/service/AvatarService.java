@@ -4,14 +4,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ru.hogwarts.school.exception.CustomNotFoundException;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repositories.AvatarRepository;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -19,7 +26,7 @@ import java.util.Objects;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 @Service
-@Transactional
+
 public class AvatarService {
 
     @Value("${students.avatars.dir.path}")
@@ -32,8 +39,10 @@ public class AvatarService {
         this.avatarRepository = avatarRepository;
     }
 
+    @Transactional
     public void uploadAvatar(Long studentId, MultipartFile avatarFile) throws IOException {
-        Student student = studentService.findStudent(studentId).get();
+        Student student = studentService.findStudent(studentId)
+                .orElseThrow(() -> new CustomNotFoundException("Student not found"));
         Path filePath = Path.of(avatarsDir, student + "."
                 + getExtensions(Objects.requireNonNull(avatarFile.getOriginalFilename())));
         Files.createDirectories(filePath.getParent());
@@ -47,6 +56,9 @@ public class AvatarService {
             bis.transferTo(bos);
         }
         Avatar avatar = findAvatar(studentId);
+        if (avatar == null) {
+            avatar = new Avatar();
+        }
         avatar.setStudent(student);
         avatar.setFilePath(filePath.toString());
         avatar.setFileSize(avatarFile.getSize());
@@ -55,8 +67,27 @@ public class AvatarService {
         avatarRepository.save(avatar);
     }
 
+    @Transactional
     public Avatar findAvatar(Long studentId) {
-        return avatarRepository.findByStudentId(studentId).orElse(new Avatar());
+        Student student = studentService.findStudent(studentId)
+                .orElseThrow(() -> new CustomNotFoundException("Student not found"));
+        return avatarRepository.findByStudentId(student.getId()).orElse(null);
+    }
+
+    @Transactional
+    public void getAvatarFromFile(Long id, HttpServletResponse response) throws IOException {
+        Avatar avatarFromFile = findAvatar(id);
+        if (avatarFromFile == null) {
+            throw new CustomNotFoundException("Avatar not found");
+        }
+        Path path = Path.of(avatarFromFile.getFilePath());
+        try (InputStream is = Files.newInputStream(path);
+             OutputStream os = response.getOutputStream();) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType(avatarFromFile.getMediaType());
+            response.setContentLength((int) avatarFromFile.getFileSize());
+            is.transferTo(os);
+        }
     }
 
     private byte[] generateImageAvatar(Path filePath) throws IOException {
