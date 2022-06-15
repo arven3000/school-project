@@ -3,7 +3,8 @@ package ru.hogwarts.school.model;
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity(name = "students")
+@Entity
+@Table(name = "students")
 public class Student {
     @Id
     @GeneratedValue
