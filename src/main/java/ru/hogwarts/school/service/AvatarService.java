@@ -26,7 +26,6 @@ import java.util.Objects;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 @Service
-
 public class AvatarService {
 
     @Value("${students.avatars.dir.path}")
