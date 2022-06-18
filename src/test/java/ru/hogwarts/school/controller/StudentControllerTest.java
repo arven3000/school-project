@@ -1,6 +1,8 @@
 package ru.hogwarts.school.controller;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.service.StudentService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,19 +23,80 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static ru.hogwarts.school.controller.SchoolProjectTestConstants.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class StudentControllerTest {
+    private final Student newHarry = new Student(null, "Harry", 12, GRYFFINDOR);
+    private final Student newHermione = new Student(null, "Hermione", 12, GRYFFINDOR);
+    private final Student newRon = new Student(null,  "Ron", 13, GRYFFINDOR);
+    private final Student newDraco = new Student(null, "Draco", 13, SLYTHERIN);
+    private final Student newCrab = new Student(null, "Crab", 14, SLYTHERIN);
+    private final Student newGoyle = new Student(null,  "Goyle", 13, SLYTHERIN);
+    private final Student newCedric = new Student(null, "Cedric", 16, HUFFLEPUFF);
+    private final Student newSusan = new Student(null,  "Susan", 12, HUFFLEPUFF);
+    private final Student newZhou = new Student(null, "Zhou", 14, RAVENCLAW);
+    private final Student newLuna = new Student(null,  "Luna", 12, RAVENCLAW);
 
     @LocalServerPort
     private int port;
-
+    @Autowired
+    private StudentService studentService;
     @Autowired
     private StudentController studentController;
-
     @Autowired
     private TestRestTemplate testRestTemplate;
+
+    @BeforeEach
+    void init() {
+
+        studentService.createStudent(newHarry);
+        studentService.createStudent(newHermione);
+        studentService.createStudent(newRon);
+        studentService.createStudent(newDraco);
+        studentService.createStudent(newCrab);
+        studentService.createStudent(newGoyle);
+        studentService.createStudent(newCedric);
+        studentService.createStudent(newSusan);
+        studentService.createStudent(newZhou);
+        studentService.createStudent(newLuna);
+
+        ResponseEntity<List<Student>> responseList = testRestTemplate.exchange(("http://localhost:" + port
+                        + "/student"), HttpMethod.GET, null,
+                new ParameterizedTypeReference<>() {
+                });
+
+        List<Student> listResponseEntity = responseList.getBody();
+
+        assert listResponseEntity != null;
+        listResponseEntity.sort(Comparator.comparing(Student::getId));
+
+        newHarry.setId(listResponseEntity.get(listResponseEntity.size() - 10).getId());
+        newHermione.setId(listResponseEntity.get(listResponseEntity.size() - 9).getId());
+        newRon.setId(listResponseEntity.get(listResponseEntity.size() - 8).getId());
+        newDraco.setId(listResponseEntity.get(listResponseEntity.size() - 7).getId());
+        newCrab.setId(listResponseEntity.get(listResponseEntity.size() - 6).getId());
+        newGoyle.setId(listResponseEntity.get(listResponseEntity.size() - 5).getId());
+        newCedric.setId(listResponseEntity.get(listResponseEntity.size() - 4).getId());
+        newSusan.setId(listResponseEntity.get(listResponseEntity.size() - 3).getId());
+        newZhou.setId(listResponseEntity.get(listResponseEntity.size() - 2).getId());
+        newLuna.setId(listResponseEntity.get(listResponseEntity.size() - 1).getId());
+
+    }
+
+    @AfterEach
+    void tearDown() {
+        studentService.removeStudent(newHarry.getId());
+        studentService.removeStudent(newHermione.getId());
+        studentService.removeStudent(newRon.getId());
+        studentService.removeStudent(newDraco.getId());
+        studentService.removeStudent(newCrab.getId());
+        studentService.removeStudent(newGoyle.getId());
+        studentService.removeStudent(newCedric.getId());
+        studentService.removeStudent(newSusan.getId());
+        studentService.removeStudent(newZhou.getId());
+        studentService.removeStudent(newLuna.getId());
+    }
 
     @Test
     void contextLoads() {
@@ -55,25 +119,16 @@ class StudentControllerTest {
     @Test
     void getAllStudentsByAgeInTheIntervalTest() {
 
-        int max = 13;
+        List<Student> students = new ArrayList<>(List.of(newHarry,
+                newHermione, newSusan, newLuna, newRon, newDraco,
+                newGoyle));
+
+
         int min = 12;
-
-        List<Student> students = new ArrayList<>(List.of(SchoolProjectTestConstants.HARRY,
-                SchoolProjectTestConstants.HERMIONE,
-                SchoolProjectTestConstants.SUSAN,
-                SchoolProjectTestConstants.LUNA,
-                SchoolProjectTestConstants.RON,
-                SchoolProjectTestConstants.DRACO,
-                SchoolProjectTestConstants.GOYLE));
-
-
+        int max = 13;
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getByAgeInTheInterval?min={min}&max={max}", String.class, min, max))
                 .isNotNull();
-
-        Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getByAgeInTheInterval?min={min}&max={max}", List.class, min, max))
-                .hasSize(students.size());
 
         ResponseEntity<List<Student>> response = testRestTemplate.exchange(("http://localhost:" + port
                         + "/student/getByAgeInTheInterval?min={min}&max={max}"), HttpMethod.GET, null,
@@ -84,87 +139,72 @@ class StudentControllerTest {
 
         Assertions.assertThat(listResponseEntity).containsAll(students);
 
-        assert listResponseEntity != null;
-        listResponseEntity.sort(Comparator.comparing(Student::getName));
-        students.sort(Comparator.comparing(Student::getName));
-        assertArrayEquals(listResponseEntity.toArray(), students.toArray());
-
     }
 
     @Test
     void getStudentTest() {
-        long id = 32L;
+        long id = newRon.getId();
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/{id}", String.class, id))
                 .isNotNull();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/{id}", Student.class, id))
-                .isEqualTo(SchoolProjectTestConstants.RON);
+                .isEqualTo(newRon);
 
-        id = 39L;
+        id = newLuna.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/{id}", Student.class, id))
-                .isEqualTo(SchoolProjectTestConstants.LUNA);
+                .isEqualTo(newLuna);
     }
 
     @Test
     void getAllStudentsByAgeTest() {
 
-        int age = 14;
+        List<Student> students = new ArrayList<>(List.of(newCrab,
+                newZhou));
 
-        List<Student> students = new ArrayList<>(List.of(SchoolProjectTestConstants.CRAB,
-                SchoolProjectTestConstants.ZHOU));
-
+        int ageForAllStudentTest = 14;
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getByAge/{age}", String.class, age))
+                        + "/student/getByAge/{age}", String.class, ageForAllStudentTest))
                 .isNotNull();
-
-        Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getByAge/{age}", List.class, age))
-                .hasSize(students.size());
 
         ResponseEntity<List<Student>> response = testRestTemplate.exchange(("http://localhost:" + port
                         + "/student/getByAge/{age}"), HttpMethod.GET, null,
                 new ParameterizedTypeReference<>() {
-                }, age);
+                }, ageForAllStudentTest);
 
         List<Student> listResponseEntity = response.getBody();
 
         Assertions.assertThat(listResponseEntity).containsAll(students);
 
-        assert listResponseEntity != null;
-        listResponseEntity.sort(Comparator.comparing(Student::getName));
-        students.sort(Comparator.comparing(Student::getName));
-        assertArrayEquals(listResponseEntity.toArray(), students.toArray());
-
     }
 
     @Test
     void getFacultyTest() {
-        long id = 32L;
+        long id = newHermione.getId();
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", String.class, id))
                 .isNotNull();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
-                .isEqualTo(SchoolProjectTestConstants.GRYFFINDOR);
+                .isEqualTo(GRYFFINDOR);
 
-        id = 36;
+        id = newCedric.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
                 .isEqualTo(SchoolProjectTestConstants.HUFFLEPUFF);
 
-        id = 33;
+        id = newDraco.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
-                .isEqualTo(SchoolProjectTestConstants.SLYTHERIN);
+                .isEqualTo(SLYTHERIN);
 
-        id = 38;
+        id = newZhou.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
@@ -173,7 +213,7 @@ class StudentControllerTest {
 
     @Test
     void createStudentTest() {
-        Student student = new Student(null, "Voldemort", 30, SchoolProjectTestConstants.SLYTHERIN);
+        Student student = new Student(null, "Voldemort", 30, SLYTHERIN);
 
         Assertions
                 .assertThat(this.testRestTemplate.postForObject("http://localhost:" + port + "/student",
@@ -192,45 +232,43 @@ class StudentControllerTest {
         Assertions.assertThat(listResponseEntity.get(listResponseEntity.size() - 1).getName())
                 .isEqualTo("Voldemort");
 
+        ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
+                        + "/student/{id}"), HttpMethod.DELETE, null,
+                Student.class, listResponseEntity.get(listResponseEntity.size() - 1).getId());
+
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
     }
 
     @Test
     void editStudentTest() {
 
-        int age = 17;
+        int ageForEditStudentTest = 17;
+        newCedric.setAge(ageForEditStudentTest);
 
-        SchoolProjectTestConstants.CEDRIC.setAge(age);
-
-        HttpEntity<Student> entity = new HttpEntity<>(SchoolProjectTestConstants.CEDRIC);
+        HttpEntity<Student> entity = new HttpEntity<>(newCedric);
 
         ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
                         + "/student"), HttpMethod.PUT, entity,
                 Student.class);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Assertions.assertThat(Objects.requireNonNull(response.getBody()).getId()).isEqualTo(36L);
-        Assertions.assertThat(response.getBody().getName()).isEqualTo("Cedric");
-        Assertions.assertThat(response.getBody().getAge()).isEqualTo(age);
+        Assertions.assertThat(Objects.requireNonNull(response.getBody()).getId())
+                .isEqualTo(newCedric.getId());
+        Assertions.assertThat(response.getBody().getName()).isEqualTo(newCedric.getName());
+        Assertions.assertThat(response.getBody().getAge()).isEqualTo(ageForEditStudentTest);
 
     }
 
     @Test
     void deleteStudentTest() {
-        long id = 72L;
 
-        ResponseEntity<Student> responseGet = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student/{id}"), HttpMethod.GET, null,
-                Student.class, id);
+        Student student = new Student(null, "Voldemort", 30, SLYTHERIN);
 
-        Student student = responseGet.getBody();
-
-
-        assert student != null;
-        ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student/{id}"), HttpMethod.DELETE, null,
-                Student.class, student.getId());
-
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Assertions
+                .assertThat(this.testRestTemplate.postForObject("http://localhost:" + port + "/student",
+                        student, String.class))
+                .isNotNull();
 
         ResponseEntity<List<Student>> responseList = testRestTemplate.exchange(("http://localhost:" + port
                         + "/student"), HttpMethod.GET, null,
@@ -238,6 +276,27 @@ class StudentControllerTest {
                 });
 
         List<Student> listResponseEntity = responseList.getBody();
+
+        assert listResponseEntity != null;
+        listResponseEntity.sort(Comparator.comparing(Student::getId));
+
+        long id = listResponseEntity.get(listResponseEntity.size() - 1).getId();
+
+        student.setId(id);
+
+        ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
+                        + "/student/{id}"), HttpMethod.DELETE, null,
+                Student.class, id);
+
+
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        responseList = testRestTemplate.exchange(("http://localhost:" + port
+                        + "/student"), HttpMethod.GET, null,
+                new ParameterizedTypeReference<>() {
+                });
+
+        listResponseEntity = responseList.getBody();
 
         assert listResponseEntity != null;
         Assertions.assertThat(listResponseEntity).doesNotContain(student);
