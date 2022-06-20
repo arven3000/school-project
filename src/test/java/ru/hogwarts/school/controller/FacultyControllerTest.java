@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.repositories.FacultyRepository;
 import ru.hogwarts.school.service.FacultyService;
+import ru.hogwarts.school.service.FacultyServiceImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,7 @@ class FacultyControllerTest {
     private FacultyRepository facultyRepository;
 
     @SpyBean
-    private FacultyService facultyService;
+    private FacultyServiceImpl facultyService;
 
     @InjectMocks
     private FacultyController facultyController;

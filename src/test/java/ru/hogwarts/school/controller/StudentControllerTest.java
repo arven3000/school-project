@@ -1,11 +1,13 @@
 package ru.hogwarts.school.controller;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,87 +17,55 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repositories.FacultyRepository;
+import ru.hogwarts.school.repositories.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static ru.hogwarts.school.controller.SchoolProjectTestConstants.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class StudentControllerTest {
-    private final Student newHarry = new Student(null, "Harry", 12, GRYFFINDOR);
-    private final Student newHermione = new Student(null, "Hermione", 12, GRYFFINDOR);
-    private final Student newRon = new Student(null,  "Ron", 13, GRYFFINDOR);
-    private final Student newDraco = new Student(null, "Draco", 13, SLYTHERIN);
-    private final Student newCrab = new Student(null, "Crab", 14, SLYTHERIN);
-    private final Student newGoyle = new Student(null,  "Goyle", 13, SLYTHERIN);
-    private final Student newCedric = new Student(null, "Cedric", 16, HUFFLEPUFF);
-    private final Student newSusan = new Student(null,  "Susan", 12, HUFFLEPUFF);
-    private final Student newZhou = new Student(null, "Zhou", 14, RAVENCLAW);
-    private final Student newLuna = new Student(null,  "Luna", 12, RAVENCLAW);
 
     @LocalServerPort
     private int port;
+    @MockBean
+    private StudentRepository studentRepository;
+    @MockBean
+    private FacultyRepository facultyRepository;
     @Autowired
     private StudentService studentService;
     @Autowired
+    @InjectMocks
     private StudentController studentController;
     @Autowired
     private TestRestTemplate testRestTemplate;
 
     @BeforeEach
     void init() {
+        when(studentRepository.findById(111L)).thenReturn(Optional.of(HARRY));
+        when(studentRepository.findById(222L)).thenReturn(Optional.of(HERMIONE));
+        when(studentRepository.findById(333L)).thenReturn(Optional.of(RON));
+        when(studentRepository.findById(444L)).thenReturn(Optional.of(DRACO));
+        when(studentRepository.findById(555L)).thenReturn(Optional.of(CRAB));
+        when(studentRepository.findById(666L)).thenReturn(Optional.of(GOYLE));
+        when(studentRepository.findById(777L)).thenReturn(Optional.of(CEDRIC));
+        when(studentRepository.findById(888L)).thenReturn(Optional.of(SUSAN));
+        when(studentRepository.findById(999L)).thenReturn(Optional.of(ZHOU));
+        when(studentRepository.findById(1000L)).thenReturn(Optional.of(LUNA));
 
-        studentService.createStudent(newHarry);
-        studentService.createStudent(newHermione);
-        studentService.createStudent(newRon);
-        studentService.createStudent(newDraco);
-        studentService.createStudent(newCrab);
-        studentService.createStudent(newGoyle);
-        studentService.createStudent(newCedric);
-        studentService.createStudent(newSusan);
-        studentService.createStudent(newZhou);
-        studentService.createStudent(newLuna);
+        when(facultyRepository.findById(111L)).thenReturn(Optional.of(GRYFFINDOR));
+        when(facultyRepository.findById(222L)).thenReturn(Optional.of(SLYTHERIN));
+        when(facultyRepository.findById(333L)).thenReturn(Optional.of(RAVENCLAW));
+        when(facultyRepository.findById(444L)).thenReturn(Optional.of(HUFFLEPUFF));
 
-        ResponseEntity<List<Student>> responseList = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student"), HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {
-                });
-
-        List<Student> listResponseEntity = responseList.getBody();
-
-        assert listResponseEntity != null;
-        listResponseEntity.sort(Comparator.comparing(Student::getId));
-
-        newHarry.setId(listResponseEntity.get(listResponseEntity.size() - 10).getId());
-        newHermione.setId(listResponseEntity.get(listResponseEntity.size() - 9).getId());
-        newRon.setId(listResponseEntity.get(listResponseEntity.size() - 8).getId());
-        newDraco.setId(listResponseEntity.get(listResponseEntity.size() - 7).getId());
-        newCrab.setId(listResponseEntity.get(listResponseEntity.size() - 6).getId());
-        newGoyle.setId(listResponseEntity.get(listResponseEntity.size() - 5).getId());
-        newCedric.setId(listResponseEntity.get(listResponseEntity.size() - 4).getId());
-        newSusan.setId(listResponseEntity.get(listResponseEntity.size() - 3).getId());
-        newZhou.setId(listResponseEntity.get(listResponseEntity.size() - 2).getId());
-        newLuna.setId(listResponseEntity.get(listResponseEntity.size() - 1).getId());
-
-    }
-
-    @AfterEach
-    void tearDown() {
-        studentService.removeStudent(newHarry.getId());
-        studentService.removeStudent(newHermione.getId());
-        studentService.removeStudent(newRon.getId());
-        studentService.removeStudent(newDraco.getId());
-        studentService.removeStudent(newCrab.getId());
-        studentService.removeStudent(newGoyle.getId());
-        studentService.removeStudent(newCedric.getId());
-        studentService.removeStudent(newSusan.getId());
-        studentService.removeStudent(newZhou.getId());
-        studentService.removeStudent(newLuna.getId());
     }
 
     @Test
@@ -105,6 +75,8 @@ class StudentControllerTest {
 
     @Test
     void getAllStudentsTest() {
+        when(studentRepository.findAll()).thenReturn(List.of(HARRY, HERMIONE, RON, DRACO,
+                CRAB, GOYLE, CEDRIC, SUSAN, ZHOU, LUNA));
         Assertions
                 .assertThat(this.testRestTemplate.getForObject("http://localhost:" + port + "/student", String.class))
                 .isNotNull();
@@ -114,18 +86,30 @@ class StudentControllerTest {
         Assertions
                 .assertThat(this.testRestTemplate.getForObject("http://localhost:" + port + "/student", List.class))
                 .isNotEqualTo(students);
+
+        ResponseEntity<List<Student>> response = testRestTemplate.exchange(("http://localhost:" + port
+                        + "/student"), HttpMethod.GET, null,
+                new ParameterizedTypeReference<>() {
+                });
+
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        verify(studentRepository, times(3)).findAll();
+
     }
 
     @Test
     void getAllStudentsByAgeInTheIntervalTest() {
 
-        List<Student> students = new ArrayList<>(List.of(newHarry,
-                newHermione, newSusan, newLuna, newRon, newDraco,
-                newGoyle));
-
+        List<Student> students = new ArrayList<>(List.of(HARRY,
+                HERMIONE, SUSAN, LUNA, RON, DRACO,
+                GOYLE));
 
         int min = 12;
         int max = 13;
+
+        when(studentRepository.findAllByAgeBetweenOrderByAge(min, max)).thenReturn(students);
+
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getByAgeInTheInterval?min={min}&max={max}", String.class, min, max))
                 .isNotNull();
@@ -135,37 +119,42 @@ class StudentControllerTest {
                 new ParameterizedTypeReference<>() {
                 }, min, max);
 
-        List<Student> listResponseEntity = response.getBody();
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        Assertions.assertThat(listResponseEntity).containsAll(students);
+        verify(studentRepository, times(2)).findAllByAgeBetweenOrderByAge(anyInt(), anyInt());
 
     }
 
     @Test
     void getStudentTest() {
-        long id = newRon.getId();
+        long id = RON.getId();
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/{id}", String.class, id))
                 .isNotNull();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/{id}", Student.class, id))
-                .isEqualTo(newRon);
+                .isEqualTo(RON);
 
-        id = newLuna.getId();
+        id = LUNA.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/{id}", Student.class, id))
-                .isEqualTo(newLuna);
+                .isEqualTo(LUNA);
+        verify(studentRepository, times(3)).findById(anyLong());
+
     }
 
     @Test
     void getAllStudentsByAgeTest() {
 
-        List<Student> students = new ArrayList<>(List.of(newCrab,
-                newZhou));
+        List<Student> students = new ArrayList<>(List.of(CRAB,
+                ZHOU));
 
         int ageForAllStudentTest = 14;
+
+        when(studentRepository.findAllByAge(ageForAllStudentTest)).thenReturn(students);
+
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getByAge/{age}", String.class, ageForAllStudentTest))
                 .isNotNull();
@@ -175,15 +164,15 @@ class StudentControllerTest {
                 new ParameterizedTypeReference<>() {
                 }, ageForAllStudentTest);
 
-        List<Student> listResponseEntity = response.getBody();
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        Assertions.assertThat(listResponseEntity).containsAll(students);
+        verify(studentRepository, times(2)).findAllByAge(anyInt());
 
     }
 
     @Test
     void getFacultyTest() {
-        long id = newHermione.getId();
+        long id = HERMIONE.getId();
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", String.class, id))
                 .isNotNull();
@@ -192,61 +181,61 @@ class StudentControllerTest {
                         + "/student/getFaculty/{id}", Faculty.class, id))
                 .isEqualTo(GRYFFINDOR);
 
-        id = newCedric.getId();
+        id = CEDRIC.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
-                .isEqualTo(SchoolProjectTestConstants.HUFFLEPUFF);
+                .isEqualTo(HUFFLEPUFF);
 
-        id = newDraco.getId();
+        id = DRACO.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
                 .isEqualTo(SLYTHERIN);
 
-        id = newZhou.getId();
+        id = ZHOU.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
                         + "/student/getFaculty/{id}", Faculty.class, id))
-                .isEqualTo(SchoolProjectTestConstants.RAVENCLAW);
+                .isEqualTo(RAVENCLAW);
+
+        verify(studentRepository, times(5)).findById(anyLong());
+
     }
 
     @Test
     void createStudentTest() {
-        Student student = new Student(null, "Voldemort", 30, SLYTHERIN);
-
+        Student student = new Student(1111L, "Voldemort", 30, SLYTHERIN);
+        when(studentRepository.save(Mockito.any())).thenReturn(student);
         Assertions
                 .assertThat(this.testRestTemplate.postForObject("http://localhost:" + port + "/student",
                         student, String.class))
                 .isNotNull();
 
-        ResponseEntity<List<Student>> responseList = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student"), HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {
-                });
-
-        List<Student> listResponseEntity = responseList.getBody();
-
-        assert listResponseEntity != null;
-        listResponseEntity.sort(Comparator.comparing(Student::getId));
-        Assertions.assertThat(listResponseEntity.get(listResponseEntity.size() - 1).getName())
-                .isEqualTo("Voldemort");
+        when(studentRepository.findById(1111L)).thenReturn(Optional.of(student));
 
         ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student/{id}"), HttpMethod.DELETE, null,
-                Student.class, listResponseEntity.get(listResponseEntity.size() - 1).getId());
+                        + "/student/{id}"), HttpMethod.GET, null,
+                Student.class, 1111L);
+
+        Student responseStudent = response.getBody();
+
+        Assertions.assertThat(responseStudent.getName()).isEqualTo("Voldemort");
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        verify(studentRepository, times(1)).findById(anyLong());
+        verify(studentRepository, times(1)).save(Mockito.any());
 
     }
 
     @Test
     void editStudentTest() {
-
+        when(studentRepository.save(Mockito.any())).thenReturn(CEDRIC);
         int ageForEditStudentTest = 17;
-        newCedric.setAge(ageForEditStudentTest);
+        CEDRIC.setAge(ageForEditStudentTest);
 
-        HttpEntity<Student> entity = new HttpEntity<>(newCedric);
+        HttpEntity<Student> entity = new HttpEntity<>(CEDRIC);
 
         ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
                         + "/student"), HttpMethod.PUT, entity,
@@ -254,51 +243,29 @@ class StudentControllerTest {
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Assertions.assertThat(Objects.requireNonNull(response.getBody()).getId())
-                .isEqualTo(newCedric.getId());
-        Assertions.assertThat(response.getBody().getName()).isEqualTo(newCedric.getName());
+                .isEqualTo(CEDRIC.getId());
+        Assertions.assertThat(response.getBody().getName()).isEqualTo(CEDRIC.getName());
         Assertions.assertThat(response.getBody().getAge()).isEqualTo(ageForEditStudentTest);
+
+        verify(studentRepository, times(1)).save(Mockito.any());
 
     }
 
     @Test
     void deleteStudentTest() {
 
-        Student student = new Student(null, "Voldemort", 30, SLYTHERIN);
+        Student student = new Student(1111L, "Voldemort", 30, SLYTHERIN);
 
-        Assertions
-                .assertThat(this.testRestTemplate.postForObject("http://localhost:" + port + "/student",
-                        student, String.class))
-                .isNotNull();
-
-        ResponseEntity<List<Student>> responseList = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student"), HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {
-                });
-
-        List<Student> listResponseEntity = responseList.getBody();
-
-        assert listResponseEntity != null;
-        listResponseEntity.sort(Comparator.comparing(Student::getId));
-
-        long id = listResponseEntity.get(listResponseEntity.size() - 1).getId();
-
-        student.setId(id);
+        when(studentRepository.findById(1111L)).thenReturn(Optional.of(student));
+        doNothing().when(studentRepository).deleteById(any(Long.class));
 
         ResponseEntity<Student> response = testRestTemplate.exchange(("http://localhost:" + port
                         + "/student/{id}"), HttpMethod.DELETE, null,
-                Student.class, id);
-
+                Student.class, 1111L);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        responseList = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student"), HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {
-                });
+        verify(studentRepository, times(1)).deleteById(1111L);
 
-        listResponseEntity = responseList.getBody();
-
-        assert listResponseEntity != null;
-        Assertions.assertThat(listResponseEntity).doesNotContain(student);
     }
 }
