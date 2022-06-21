@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ru.hogwarts.school.exception.CustomBadRequestException;
 import ru.hogwarts.school.exception.CustomNotFoundException;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
@@ -96,7 +97,13 @@ public class AvatarServiceImpl implements AvatarService {
 
     @Override
     public Collection<Avatar> getAllAvatars(Integer page, Integer size) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        PageRequest pageRequest;
+        if (page >= 0 && size > 0) {
+            pageRequest = page > 0 ? PageRequest.of(page - 1, size) : PageRequest.of(page, size);
+        } else {
+            throw new CustomBadRequestException("The page number cannot be less than 0, " +
+                    "the page size cannot be less than 1");
+        }
         return avatarRepository.findAll(pageRequest).getContent();
     }
 

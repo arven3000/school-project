@@ -73,7 +73,7 @@ class FacultyControllerTest {
                 .thenReturn(List.of(SchoolProjectTestConstants.GRYFFINDOR));
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/faculty//getAllFacultiesByColorOrName?example={example}",
+                        .get("/faculty/get-all-faculties-by-color-or-name?example={example}",
                                 SchoolProjectTestConstants.GRYFFINDOR.getColor())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -85,7 +85,7 @@ class FacultyControllerTest {
                 .thenReturn(List.of(SchoolProjectTestConstants.RAVENCLAW));
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/faculty/getAllFacultiesByColorOrName?example={example}",
+                        .get("/faculty/get-all-faculties-by-color-or-name?example={example}",
                                 SchoolProjectTestConstants.RAVENCLAW.getName())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -114,7 +114,7 @@ class FacultyControllerTest {
                 .thenReturn(List.of(SchoolProjectTestConstants.RAVENCLAW));
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/faculty/findByColor/{color}", SchoolProjectTestConstants.RAVENCLAW.getColor())
+                        .get("/faculty/find-by-color/{color}", SchoolProjectTestConstants.RAVENCLAW.getColor())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(SchoolProjectTestConstants.RAVENCLAW.getId()))
@@ -125,7 +125,7 @@ class FacultyControllerTest {
                 .thenReturn(List.of(SchoolProjectTestConstants.HUFFLEPUFF));
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/faculty/findByColor/{color}", SchoolProjectTestConstants.HUFFLEPUFF.getColor())
+                        .get("/faculty/find-by-color/{color}", SchoolProjectTestConstants.HUFFLEPUFF.getColor())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(SchoolProjectTestConstants.HUFFLEPUFF.getId()))
@@ -140,7 +140,7 @@ class FacultyControllerTest {
                 .thenReturn(Optional.of(SchoolProjectTestConstants.HUFFLEPUFF));
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/faculty/getStudents/{id}", SchoolProjectTestConstants.HUFFLEPUFF.getId())
+                        .get("/faculty/get-students/{id}", SchoolProjectTestConstants.HUFFLEPUFF.getId())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

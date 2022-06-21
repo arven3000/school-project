@@ -111,11 +111,11 @@ class StudentControllerTest {
         when(studentRepository.findAllByAgeBetweenOrderByAge(min, max)).thenReturn(students);
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getByAgeInTheInterval?min={min}&max={max}", String.class, min, max))
+                        + "/student/get-by-age-in-iheInterval?min={min}&max={max}", String.class, min, max))
                 .isNotNull();
 
         ResponseEntity<List<Student>> response = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student/getByAgeInTheInterval?min={min}&max={max}"), HttpMethod.GET, null,
+                        + "/student/get-by-age-in-iheInterval?min={min}&max={max}"), HttpMethod.GET, null,
                 new ParameterizedTypeReference<>() {
                 }, min, max);
 
@@ -156,11 +156,11 @@ class StudentControllerTest {
         when(studentRepository.findAllByAge(ageForAllStudentTest)).thenReturn(students);
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getByAge/{age}", String.class, ageForAllStudentTest))
+                        + "/student/get-by-age/{age}", String.class, ageForAllStudentTest))
                 .isNotNull();
 
         ResponseEntity<List<Student>> response = testRestTemplate.exchange(("http://localhost:" + port
-                        + "/student/getByAge/{age}"), HttpMethod.GET, null,
+                        + "/student/get-by-age/{age}"), HttpMethod.GET, null,
                 new ParameterizedTypeReference<>() {
                 }, ageForAllStudentTest);
 
@@ -174,29 +174,29 @@ class StudentControllerTest {
     void getFacultyTest() {
         long id = HERMIONE.getId();
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getFaculty/{id}", String.class, id))
+                        + "/student/get-faculty/{id}", String.class, id))
                 .isNotNull();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getFaculty/{id}", Faculty.class, id))
+                        + "/student/get-faculty/{id}", Faculty.class, id))
                 .isEqualTo(GRYFFINDOR);
 
         id = CEDRIC.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getFaculty/{id}", Faculty.class, id))
+                        + "/student/get-faculty/{id}", Faculty.class, id))
                 .isEqualTo(HUFFLEPUFF);
 
         id = DRACO.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getFaculty/{id}", Faculty.class, id))
+                        + "/student/get-faculty/{id}", Faculty.class, id))
                 .isEqualTo(SLYTHERIN);
 
         id = ZHOU.getId();
 
         Assertions.assertThat(this.testRestTemplate.getForObject("http://localhost:" + port
-                        + "/student/getFaculty/{id}", Faculty.class, id))
+                        + "/student/get-faculty/{id}", Faculty.class, id))
                 .isEqualTo(RAVENCLAW);
 
         verify(studentRepository, times(5)).findById(anyLong());
