@@ -1,7 +1,15 @@
 package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
@@ -24,7 +32,7 @@ public class FacultyController {
         return facultyService.getAllFaculties();
     }
 
-    @GetMapping("/getAllFacultiesByColorOrName")
+    @GetMapping("/get-all-faculties-by-color-or-name")
     public ResponseEntity<Collection<Faculty>> getAllFacultiesByColorOrName(@RequestParam String example) {
         Collection<Faculty> faculties = facultyService.getFacultiesByColorOrName(example);
         if (faculties.isEmpty()) {
@@ -40,7 +48,7 @@ public class FacultyController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/findByColor/{color}")
+    @GetMapping("/find-by-color/{color}")
     public ResponseEntity<Collection<Faculty>> getAllFacultiesByColor(@PathVariable String color) {
         Collection<Faculty> faculties = facultyService.getFacultiesByColor(color);
         if (faculties.isEmpty()) {
@@ -49,7 +57,7 @@ public class FacultyController {
         return ResponseEntity.ok(faculties);
     }
 
-    @GetMapping("/getStudents/{id}")
+    @GetMapping("/get-students/{id}")
     public ResponseEntity<Set<Student>> getStudents(@PathVariable long id) {
         return facultyService.findFaculty(id).map(f -> ResponseEntity.ok(f.getStudents()))
                 .orElse(ResponseEntity.notFound().build());

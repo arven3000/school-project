@@ -1,7 +1,15 @@
 package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
@@ -24,7 +32,7 @@ public class StudentController {
     }
 
 
-    @GetMapping("/getByAgeInTheInterval")
+    @GetMapping("/get-by-age-in-iheInterval")
     public Collection<Student> getAllStudentsByAgeInTheInterval(@RequestParam int min,
                                                                 @RequestParam int max) {
         return studentService.getAllByAgeBetweenOrderByAge(min, max);
@@ -37,7 +45,7 @@ public class StudentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/getByAge/{age}")
+    @GetMapping("/get-by-age/{age}")
     public ResponseEntity<Collection<Student>> getAllStudentsByAge(@PathVariable int age) {
         Collection<Student> students = studentService.getAllStudentsByAge(age);
         if (students.isEmpty()) {
@@ -46,11 +54,26 @@ public class StudentController {
         return ResponseEntity.ok(students);
     }
 
-    @GetMapping("/getFaculty/{id}")
+    @GetMapping("/get-faculty/{id}")
     public ResponseEntity<Faculty> getFaculty(@PathVariable long id) {
         return studentService.findStudent(id)
                 .map(s -> ResponseEntity.ok(s.getFaculty()))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/number-of-all-students")
+    public ResponseEntity<Integer> getNumberOfAllStudents() {
+        return ResponseEntity.ok(studentService.getCountOfAllStudent());
+    }
+
+    @GetMapping("/avg-age-students")
+    public ResponseEntity<Double> getAvgAgeStudents() {
+        return ResponseEntity.ok(studentService.getAvgAgeStudents());
+    }
+
+    @GetMapping("/the-last-five-students")
+    public ResponseEntity<Collection<Student>> getTheLastFiveStudents() {
+        return ResponseEntity.ok(studentService.getTheLastFiveStudents());
     }
 
     @PostMapping
