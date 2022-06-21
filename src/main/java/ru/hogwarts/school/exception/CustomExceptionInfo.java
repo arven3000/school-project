@@ -9,6 +9,13 @@ public class CustomExceptionInfo {
     public CustomExceptionInfo() {
     }
 
+    public CustomExceptionInfo(String message, String error, String status, String path) {
+        this.message = message;
+        this.error = error;
+        this.status = status;
+        this.path = path;
+    }
+
     public String getMessage() {
         return message;
     }
