@@ -51,4 +51,19 @@ public class StudentServiceImpl implements StudentService {
     public Collection<Student> getAllByAgeBetweenOrderByAge(int min, int max) {
         return studentRepository.findAllByAgeBetweenOrderByAge(min, max);
     }
+
+    @Override
+    public Integer getCountOfAllStudent() {
+        return studentRepository.getCountOfStudents();
+    }
+
+    @Override
+    public Double getAvgAgeStudents() {
+        return studentRepository.getAvgAgeStudents();
+    }
+
+    @Override
+    public Collection<Student> getTheLastFiveStudents() {
+        return studentRepository.getTheLastFiveStudents();
+    }
 }

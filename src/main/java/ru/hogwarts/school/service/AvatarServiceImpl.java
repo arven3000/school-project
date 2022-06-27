@@ -1,9 +1,11 @@
 package ru.hogwarts.school.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ru.hogwarts.school.exception.CustomBadRequestException;
 import ru.hogwarts.school.exception.CustomNotFoundException;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
@@ -21,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Objects;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -90,6 +93,18 @@ public class AvatarServiceImpl implements AvatarService {
             response.setContentLength((int) avatarFromFile.getFileSize());
             is.transferTo(os);
         }
+    }
+
+    @Override
+    public Collection<Avatar> getAllAvatars(Integer page, Integer size) {
+        PageRequest pageRequest;
+        if (page >= 0 && size > 0) {
+            pageRequest = page > 0 ? PageRequest.of(page - 1, size) : PageRequest.of(page, size);
+        } else {
+            throw new CustomBadRequestException("The page number cannot be less than 0, " +
+                    "the page size cannot be less than 1");
+        }
+        return avatarRepository.findAll(pageRequest).getContent();
     }
 
     private byte[] generateImageAvatar(Path filePath) throws IOException {

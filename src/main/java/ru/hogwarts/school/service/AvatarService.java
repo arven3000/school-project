@@ -6,6 +6,7 @@ import ru.hogwarts.school.model.Avatar;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
 
 public interface AvatarService {
     @Transactional
@@ -16,4 +17,6 @@ public interface AvatarService {
 
     @Transactional
     void getAvatarFromFile(Long id, HttpServletResponse response) throws IOException;
+
+    Collection<Avatar> getAllAvatars(Integer page, Integer size);
 }
