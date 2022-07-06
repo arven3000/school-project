@@ -1,5 +1,7 @@
 package ru.hogwarts.school.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 @Service
 public class AvatarServiceImpl implements AvatarService {
 
+    Logger logger = LoggerFactory.getLogger(AvatarServiceImpl.class);
     @Value("${students.avatars.dir.path}")
     private String avatarsDir;
     private final StudentService studentService;
@@ -44,8 +47,13 @@ public class AvatarServiceImpl implements AvatarService {
     @Override
     @Transactional
     public void uploadAvatar(Long studentId, MultipartFile avatarFile) throws IOException {
+        logger.debug("Request to upload an avatar for student with id {}", studentId);
         Student student = studentService.findStudent(studentId)
-                .orElseThrow(() -> new CustomNotFoundException("Student not found"));
+                .orElseThrow(() -> {
+                    CustomNotFoundException e = new CustomNotFoundException("Student not found");
+                    logger.error("Upload avatar by student id {} finished with error {}", studentId, e);
+                    throw e;
+                });
         Path filePath = Path.of(avatarsDir, student + "."
                 + getExtensions(Objects.requireNonNull(avatarFile.getOriginalFilename())));
         Files.createDirectories(filePath.getParent());
@@ -68,22 +76,32 @@ public class AvatarServiceImpl implements AvatarService {
         avatar.setMediaType(avatarFile.getContentType());
         avatar.setData(generateImageAvatar(filePath));
         avatarRepository.save(avatar);
+        logger.debug("Avatar upload for student with id {} completed successfully", studentId);
     }
 
     @Override
     @Transactional
     public Avatar findAvatar(Long studentId) {
+        logger.debug("Request to find an avatar by student id {}", studentId);
         Student student = studentService.findStudent(studentId)
-                .orElseThrow(() -> new CustomNotFoundException("Student not found"));
+                .orElseThrow(() -> {
+                    CustomNotFoundException e = new CustomNotFoundException("Student not found");
+                    logger.error("Find avatar by student id {} finished with error {}", studentId, e);
+                    throw e;
+                });
+        logger.debug("Avatar by student id {} find successfully", studentId);
         return avatarRepository.findByStudentId(student.getId()).orElse(null);
     }
 
     @Override
     @Transactional
     public void getAvatarFromFile(Long id, HttpServletResponse response) throws IOException {
+        logger.debug("Request to get an avatar with id {}", id);
         Avatar avatarFromFile = findAvatar(id);
         if (avatarFromFile == null) {
-            throw new CustomNotFoundException("Avatar not found");
+            CustomNotFoundException e = new CustomNotFoundException("Avatar not found");
+            logger.error("get an avatar with id {} finished with error {}", id, e.getMessage());
+            throw e;
         }
         Path path = Path.of(avatarFromFile.getFilePath());
         try (InputStream is = Files.newInputStream(path);
@@ -93,21 +111,28 @@ public class AvatarServiceImpl implements AvatarService {
             response.setContentLength((int) avatarFromFile.getFileSize());
             is.transferTo(os);
         }
+        logger.debug("Get an avatar with id {} completed successfully", id);
     }
 
     @Override
     public Collection<Avatar> getAllAvatars(Integer page, Integer size) {
+        logger.debug("Request to get all  avatars");
+
         PageRequest pageRequest;
         if (page >= 0 && size > 0) {
             pageRequest = page > 0 ? PageRequest.of(page - 1, size) : PageRequest.of(page, size);
         } else {
-            throw new CustomBadRequestException("The page number cannot be less than 0, " +
+            CustomBadRequestException e = new CustomBadRequestException("The page number cannot be less than 0, " +
                     "the page size cannot be less than 1");
+            logger.error("get all  avatars finished with error {}", e.getMessage());
+            throw e;
         }
+        logger.debug("Request to get all  avatars completed successfully");
         return avatarRepository.findAll(pageRequest).getContent();
     }
 
     private byte[] generateImageAvatar(Path filePath) throws IOException {
+        logger.debug("Request to generate Image Avatar");
         try (InputStream is = Files.newInputStream(filePath);
              BufferedInputStream bis = new BufferedInputStream(is, 1024);
              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -121,6 +146,7 @@ public class AvatarServiceImpl implements AvatarService {
             graphics.dispose();
 
             ImageIO.write(data, getExtensions(filePath.getFileName().toString()), baos);
+            logger.debug("Generate Image Avatar completed successfully");
             return baos.toByteArray();
         }
     }
