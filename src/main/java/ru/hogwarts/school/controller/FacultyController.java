@@ -63,6 +63,13 @@ public class FacultyController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/get-faculty-with-the-longest-name")
+    public ResponseEntity<String> getFacultyWithTheLongestName() {
+        return facultyService.getFacultyWithTheLongestName()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public Faculty createFaculty(@RequestBody Faculty faculty) {
         return facultyService.createFaculty(faculty);

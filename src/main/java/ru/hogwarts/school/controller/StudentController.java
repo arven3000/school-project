@@ -76,6 +76,21 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getTheLastFiveStudents());
     }
 
+    @GetMapping("/all-students-whose-name-begins-with-a")
+    public ResponseEntity<Collection<String>> getAllStudentNameStartWithA() {
+        return ResponseEntity.ok(studentService.getAllStudentNameStartWithA());
+    }
+
+    @GetMapping("/avg-age-students-by-stream-api")
+    public ResponseEntity<Double> getAvgAgeStudentsByStreamApi() {
+        return ResponseEntity.ok(studentService.getAvgAgeStudentsByStreamApi());
+    }
+
+    @GetMapping("/integer")
+    public ResponseEntity<Integer> getInteger() {
+        return ResponseEntity.ok(studentService.getInteger());
+    }
+
     @PostMapping
     public Student createStudent(@RequestBody Student student) {
         return studentService.createStudent(student);
