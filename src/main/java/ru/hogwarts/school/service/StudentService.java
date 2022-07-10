@@ -25,4 +25,14 @@ public interface StudentService {
     Double getAvgAgeStudents();
 
     Collection<Student> getTheLastFiveStudents();
+
+    Collection<String> getAllStudentNameStartWithA();
+
+    Double getAvgAgeStudentsByStreamApi();
+
+    Integer getInteger();
+
+    Collection<Student> getAllStudentsThreads();
+
+    Collection<Student> getAllStudentsSynchronizedThreads();
 }
