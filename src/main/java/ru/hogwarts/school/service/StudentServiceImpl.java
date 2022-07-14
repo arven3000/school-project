@@ -129,6 +129,9 @@ public class StudentServiceImpl implements StudentService {
     public Collection<Student> getAllStudentsThreads() {
         List<Student> students = studentRepository.findAll();
 
+        System.out.println(Thread.currentThread().getName() + ": " + students.get(0).getName());
+        System.out.println(Thread.currentThread().getName() + ": " + students.get(1).getName());
+
         Thread thread1 = new Thread(() -> {
             System.out.println(Thread.currentThread().getName() + ": " + students.get(2).getName());
             System.out.println(Thread.currentThread().getName() + ": " + students.get(3).getName());
@@ -139,9 +142,6 @@ public class StudentServiceImpl implements StudentService {
             System.out.println(Thread.currentThread().getName() + ": " + students.get(5).getName());
         });
 
-        System.out.println(Thread.currentThread().getName() + ": " + students.get(0).getName());
-        System.out.println(Thread.currentThread().getName() + ": " + students.get(1).getName());
-
         thread1.start();
         thread2.start();
         return students;
@@ -151,11 +151,11 @@ public class StudentServiceImpl implements StudentService {
     public Collection<Student> getAllStudentsSynchronizedThreads() {
         List<Student> students = studentRepository.findAll();
 
+        printName(List.of(students.get(0), students.get(1)));
+
         Thread thread1 = new Thread(() -> printName(List.of(students.get(2), students.get(3))));
 
         Thread thread2 = new Thread(() -> printName(List.of(students.get(4), students.get(5))));
-
-        printName(List.of(students.get(0), students.get(1)));
 
         thread1.start();
         thread2.start();
