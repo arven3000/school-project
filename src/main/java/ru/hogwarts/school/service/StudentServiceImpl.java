@@ -9,6 +9,8 @@ import ru.hogwarts.school.repositories.StudentRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -127,19 +129,21 @@ public class StudentServiceImpl implements StudentService {
     public Collection<Student> getAllStudentsThreads() {
         List<Student> students = studentRepository.findAll();
 
-        new Thread(() -> {
+        Thread thread1 = new Thread(() -> {
             System.out.println(Thread.currentThread().getName() + ": " + students.get(2).getName());
             System.out.println(Thread.currentThread().getName() + ": " + students.get(3).getName());
-        }).start();
+        });
 
-        new Thread(() -> {
+        Thread thread2 = new Thread(() -> {
             System.out.println(Thread.currentThread().getName() + ": " + students.get(4).getName());
             System.out.println(Thread.currentThread().getName() + ": " + students.get(5).getName());
-        }).start();
+        });
 
         System.out.println(Thread.currentThread().getName() + ": " + students.get(0).getName());
         System.out.println(Thread.currentThread().getName() + ": " + students.get(1).getName());
 
+        thread1.start();
+        thread2.start();
         return students;
     }
 
@@ -147,23 +151,19 @@ public class StudentServiceImpl implements StudentService {
     public Collection<Student> getAllStudentsSynchronizedThreads() {
         List<Student> students = studentRepository.findAll();
 
-        new Thread(() -> {
-            printName(students.get(2));
-            printName(students.get(3));
-        }).start();
+        Thread thread1 = new Thread(() -> printName(List.of(students.get(2), students.get(3))));
 
-        new Thread(() -> {
-            printName(students.get(4));
-            printName(students.get(5));
-        }).start();
+        Thread thread2 = new Thread(() -> printName(List.of(students.get(4), students.get(5))));
 
-        printName(students.get(0));
-        printName(students.get(1));
+        printName(List.of(students.get(0), students.get(1)));
+
+        thread1.start();
+        thread2.start();
 
         return students;
     }
 
-    private synchronized void printName(Student student) {
-        System.out.println(Thread.currentThread().getName() + ": " + student.getName());
+    private synchronized void printName(List<Student> students) {
+        students.forEach(student -> System.out.println(Thread.currentThread().getName() + ": " + student.getName()));
     }
 }

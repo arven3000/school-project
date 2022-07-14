@@ -76,12 +76,12 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getTheLastFiveStudents());
     }
 
-    @GetMapping("students-threads")
+    @GetMapping("/students-threads")
     public Collection<Student> getAllStudentsThreads() {
         return studentService.getAllStudentsThreads();
     }
 
-    @GetMapping("students-threads-synchronized")
+    @GetMapping("/students-threads-synchronized")
     public Collection<Student> getAllStudentsSynchronizedThreads() {
         return studentService.getAllStudentsSynchronizedThreads();
     }
