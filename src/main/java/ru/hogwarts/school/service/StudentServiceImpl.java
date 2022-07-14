@@ -7,7 +7,10 @@ import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repositories.StudentRepository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -97,5 +100,70 @@ public class StudentServiceImpl implements StudentService {
         Collection<Student> students = studentRepository.getTheLastFiveStudents();
         logger.info("Get the last five students completed successfully");
         return students;
+    }
+
+    @Override
+    public Collection<String> getAllStudentNameStartWithA() {
+        return studentRepository.findAll().stream()
+                .map(s -> s.getName().toUpperCase())
+                .filter(s -> s.startsWith("A"))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Double getAvgAgeStudentsByStreamApi() {
+        return studentRepository.findAll().stream()
+                .collect(Collectors.averagingInt(Student::getAge));
+    }
+
+    @Override
+    public Integer getInteger() {
+        return Stream.iterate(1, a -> a + 1)
+                .limit(1_000_000)
+                .parallel()
+                .reduce(0, Integer::sum);
+    }
+
+    @Override
+    public Collection<Student> getAllStudentsThreads() {
+        List<Student> students = studentRepository.findAll();
+
+        System.out.println(Thread.currentThread().getName() + ": " + students.get(0).getName());
+        System.out.println(Thread.currentThread().getName() + ": " + students.get(1).getName());
+
+        Thread thread1 = new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(2).getName());
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(3).getName());
+        });
+
+        Thread thread2 = new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(4).getName());
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(5).getName());
+        });
+
+        thread1.start();
+        thread2.start();
+        return students;
+    }
+
+    @Override
+    public Collection<Student> getAllStudentsSynchronizedThreads() {
+        List<Student> students = studentRepository.findAll();
+
+        printName(List.of(students.get(0), students.get(1)));
+
+        Thread thread1 = new Thread(() -> printName(List.of(students.get(2), students.get(3))));
+
+        Thread thread2 = new Thread(() -> printName(List.of(students.get(4), students.get(5))));
+
+        thread1.start();
+        thread2.start();
+
+        return students;
+    }
+
+    private synchronized void printName(List<Student> students) {
+        students.forEach(student -> System.out.println(Thread.currentThread().getName() + ": " + student.getName()));
     }
 }
