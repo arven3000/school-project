@@ -32,6 +32,7 @@ public interface StudentService {
 
     Integer getInteger();
 
+
     Collection<Student> getAllStudentsThreads();
 
     Collection<Student> getAllStudentsSynchronizedThreads();

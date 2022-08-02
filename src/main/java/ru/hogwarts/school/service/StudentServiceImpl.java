@@ -125,6 +125,7 @@ public class StudentServiceImpl implements StudentService {
                 .reduce(0, Integer::sum);
     }
 
+
     @Override
     public Collection<Student> getAllStudentsThreads() {
         List<Student> students = studentRepository.findAll();
@@ -166,4 +167,5 @@ public class StudentServiceImpl implements StudentService {
     private synchronized void printName(List<Student> students) {
         students.forEach(student -> System.out.println(Thread.currentThread().getName() + ": " + student.getName()));
     }
+
 }

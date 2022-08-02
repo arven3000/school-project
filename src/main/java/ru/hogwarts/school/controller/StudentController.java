@@ -76,6 +76,21 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getTheLastFiveStudents());
     }
 
+
+    @GetMapping("/all-students-whose-name-begins-with-a")
+    public ResponseEntity<Collection<String>> getAllStudentNameStartWithA() {
+        return ResponseEntity.ok(studentService.getAllStudentNameStartWithA());
+    }
+
+    @GetMapping("/avg-age-students-by-stream-api")
+    public ResponseEntity<Double> getAvgAgeStudentsByStreamApi() {
+        return ResponseEntity.ok(studentService.getAvgAgeStudentsByStreamApi());
+    }
+
+    @GetMapping("/integer")
+    public ResponseEntity<Integer> getInteger() {
+        return ResponseEntity.ok(studentService.getInteger());
+
     @GetMapping("/students-threads")
     public Collection<Student> getAllStudentsThreads() {
         return studentService.getAllStudentsThreads();
@@ -84,6 +99,7 @@ public class StudentController {
     @GetMapping("/students-threads-synchronized")
     public Collection<Student> getAllStudentsSynchronizedThreads() {
         return studentService.getAllStudentsSynchronizedThreads();
+
     }
 
     @PostMapping
