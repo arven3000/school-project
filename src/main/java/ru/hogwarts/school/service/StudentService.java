@@ -31,4 +31,9 @@ public interface StudentService {
     Double getAvgAgeStudentsByStreamApi();
 
     Integer getInteger();
+
+
+    Collection<Student> getAllStudentsThreads();
+
+    Collection<Student> getAllStudentsSynchronizedThreads();
 }

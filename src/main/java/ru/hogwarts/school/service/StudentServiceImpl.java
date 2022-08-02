@@ -7,6 +7,7 @@ import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repositories.StudentRepository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -123,4 +124,48 @@ public class StudentServiceImpl implements StudentService {
                 .parallel()
                 .reduce(0, Integer::sum);
     }
+
+
+    @Override
+    public Collection<Student> getAllStudentsThreads() {
+        List<Student> students = studentRepository.findAll();
+
+        System.out.println(Thread.currentThread().getName() + ": " + students.get(0).getName());
+        System.out.println(Thread.currentThread().getName() + ": " + students.get(1).getName());
+
+        Thread thread1 = new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(2).getName());
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(3).getName());
+        });
+
+        Thread thread2 = new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(4).getName());
+            System.out.println(Thread.currentThread().getName() + ": " + students.get(5).getName());
+        });
+
+        thread1.start();
+        thread2.start();
+        return students;
+    }
+
+    @Override
+    public Collection<Student> getAllStudentsSynchronizedThreads() {
+        List<Student> students = studentRepository.findAll();
+
+        printName(List.of(students.get(0), students.get(1)));
+
+        Thread thread1 = new Thread(() -> printName(List.of(students.get(2), students.get(3))));
+
+        Thread thread2 = new Thread(() -> printName(List.of(students.get(4), students.get(5))));
+
+        thread1.start();
+        thread2.start();
+
+        return students;
+    }
+
+    private synchronized void printName(List<Student> students) {
+        students.forEach(student -> System.out.println(Thread.currentThread().getName() + ": " + student.getName()));
+    }
+
 }
